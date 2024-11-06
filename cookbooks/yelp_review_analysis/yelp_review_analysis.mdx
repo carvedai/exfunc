@@ -1,0 +1,93 @@
+# Build a Yelp review analysis agent
+
+Learn how to use Exfunc and OpenAI to analyze reviews on any business on Yelp.
+
+## Setup
+
+Install our python dependencies, including openai and exfunc.
+
+```bash
+pip install exfunc openai
+```
+
+## Getting your OpenAI and Exfunc API Keys
+
+To use OpenAI GPT-4o and Exfunc, you will need to get your API keys. You can get your OpenAI API key from [here](https://www.openai.com/) and your Exfunc API key from [here](https://exfunc.com).
+
+## Search businesses with Exfunc
+
+To be able to search Yelp businesses, we will use [Exfunc](https://exfunc.com). Exfunc provides an easy-to-use endpoint for searching businesses.
+
+Here is how we will search businesses using exfunc:
+
+```python
+from exfunc import Exfunc
+
+s = Exfunc(api_key="YOUR-KEY")
+
+search_businesses_result = s.yelp.search_businesses(request={
+    "query": "wonton noodle soup", # replace with any search query of your choice
+    "location": "San Francisco"
+})
+
+print(search_businesses_result)
+```
+
+## Get reviews of a business
+
+Now that we have the businesses data, choose one of the businesses and fetch reviews:
+
+```python
+business_id = search_businesses_result.businesses[0].business_id
+
+get_business_reviews_result = s.yelp.get_business_reviews(request={
+    "business_id": business_id,
+})
+
+print(get_business_reviews_result)
+```
+
+## Generate a review analysis report
+
+With the reviews data, let's generate an analysis report:
+
+```python
+from openai import OpenAI
+import datetime
+
+# OpenAI API credentials
+OPENAI_API_KEY = 'your_openai_api_key'
+openai_client = OpenAI(
+    api_key=OPENAI_API_KEY
+)
+
+# Function to analyze sentiment using GPT-4o
+def generate_report(reviews_data):
+    # OpenAI prompt for generating report
+    prompt = f"Please generate a report of sentiment analysis and other key information from these yelp reviews about a business.\n\nReviews data: {reviews_data}"
+
+    # OpenAI API call
+    response = openai_client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are an expert in generating reports on user contents, reviews, and businesses."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000,
+        temperature=0
+    )
+
+    report = response.choices[0].message.content.strip()
+    return report
+
+# Run the function for a specific brand
+reviews_data = get_business_reviews_result.reviews
+report = generate_report(reviews_data)
+print(report)
+```
+
+## Conclusion
+
+You have now built an agent that can generate a comprehensive review analysis report.
+
+If you have any questions or need help, feel free to reach out to us at [Exfunc](https://exfunc.com).
