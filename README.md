@@ -32,3 +32,9 @@ Check out the following resources to get started:
 ### API Key
 
 To use the API, you need to sign up on [Exfunc](https://exfunc.com) and get an API key.
+
+## Demo
+
+This video outlines the chat assistant integration of Exfunc through function calling:
+
+https://github.com/user-attachments/assets/c771ca7b-0abc-4c24-954b-896eeb1fe760
