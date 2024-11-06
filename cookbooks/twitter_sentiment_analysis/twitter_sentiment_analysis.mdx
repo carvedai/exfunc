@@ -1,0 +1,99 @@
+# Build an agent for sentiment analysis of brand mentions
+
+Learn how to use Exfunc and OpenAI to analyze sentiment around mentions of a particular brand or product.
+
+## Setup
+
+Install our python dependencies, including openai and exfunc.
+
+```bash
+pip install exfunc openai
+```
+
+## Getting your OpenAI and Exfunc API Keys
+
+To use OpenAI GPT-4o and Exfunc, you will need to get your API keys. You can get your OpenAI API key from [here](https://www.openai.com/) and your Exfunc API key from [here](https://exfunc.com).
+
+## Search tweets with Exfunc
+
+To be able to search tweets, we will use [Exfunc](https://exfunc.com). Exfunc provides an easy-to-use endpoint for searching tweets.
+
+Here is how we will search tweets using exfunc:
+
+```python
+from exfunc import Exfunc
+
+s = Exfunc(api_key="YOUR-KEY")
+
+search_tweets_result = s.twitter.search_tweets(request={
+    "query": "YourBrand", # Replace with your target brand name
+    "type": "latest"
+})
+
+print(search_tweets_result)
+```
+
+## Sentiment Analysis
+
+Now that we have the tweets data, let's run through the results with sentiment analysis.
+
+```python
+from openai import OpenAI
+import csv
+import datetime
+
+# OpenAI API credentials
+OPENAI_API_KEY = 'your_openai_api_key'
+openai_client = OpenAI(
+    api_key=OPENAI_API_KEY
+)
+
+# Function to analyze sentiment using GPT-4o
+def analyze_sentiment(tweet_text):
+    # OpenAI prompt for sentiment analysis
+    prompt = f"Please determine the sentiment of the following tweet as 'Positive', 'Negative', or 'Neutral': \"{tweet_text}\""
+
+    # OpenAI API call
+    response = openai_client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are an assistant that classifies the sentiment of tweets."},
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=10,
+        temperature=0  # Lower temperature for consistent output
+    )
+
+    # Extract sentiment from response
+    sentiment = response.choices[0].message.content.strip()
+    return sentiment
+
+# Search and analyze brand mentions
+def search_and_analyze_brand_mentions(brand_name):
+    # Open CSV file to save results
+    with open(f"{brand_name}_sentiment_analysis.csv", mode="w") as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(["Timestamp", "Tweet", "Sentiment"])
+
+        # Search for recent tweets mentioning the brand
+        for tweet in search_tweets_result.tweets:
+            tweet_text = tweet.full_text
+            timestamp = tweet.created_at
+            sentiment = analyze_sentiment(tweet_text)
+
+            # Write results to CSV
+            writer.writerow([timestamp, tweet_text, sentiment])
+            print(f"Tweet: {tweet_text}\nSentiment: {sentiment}\n")
+
+    print(f"Analysis complete! Results saved to {brand_name}_sentiment_analysis.csv")
+
+# Run the function for a specific brand
+brand_name = "YourBrand"  # Replace with your target brand name
+search_and_analyze_brand_mentions(brand_name)
+```
+
+## That's about it!
+
+You have now built an agent that looks at tweets and analyzes sentiments for any brand.
+
+If you have any questions or need help, feel free to reach out to us at [Exfunc](https://exfunc.com).
