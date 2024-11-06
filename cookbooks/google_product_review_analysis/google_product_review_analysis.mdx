@@ -1,6 +1,6 @@
-# Build a Yelp review analysis agent
+# Build a product review analysis agent
 
-Learn how to use Exfunc and OpenAI to analyze reviews on any business on Yelp.
+Learn how to use Exfunc and OpenAI to analyze reviews on any product from Google Shopping.
 
 ## Setup
 
@@ -14,37 +14,36 @@ pip install exfunc openai
 
 To use OpenAI GPT-4o and Exfunc, you will need to get your API keys. You can get your OpenAI API key from [here](https://www.openai.com/) and your Exfunc API key from [here](https://exfunc.com).
 
-## Search businesses with Exfunc
+## Search products with Exfunc
 
-To be able to search Yelp businesses, we will use [Exfunc](https://exfunc.com). Exfunc provides an easy-to-use endpoint for searching businesses.
+To be able to search products from Google Shopping, we will use [Exfunc](https://exfunc.com). Exfunc provides an easy-to-use endpoint for searching products.
 
-Here is how we will search businesses using exfunc:
+Here is how we will search products using exfunc:
 
 ```python
 from exfunc import Exfunc
 
 s = Exfunc(api_key="YOUR-KEY")
 
-search_businesses_result = s.yelp.search_businesses(request={
-    "query": "wonton noodle soup", # replace with any search query of your choice
-    "location": "San Francisco"
+search_products_result = s.google.search_products(request={
+    "query": "airpods max pro", # replace with any search query of your choice
 })
 
-print(search_businesses_result)
+print(search_products_result)
 ```
 
-## Get reviews of a business
+## Get reviews of a product
 
-Now that we have the businesses data, choose one of the businesses and fetch reviews:
+Now that we have the products data, choose one of the products and fetch reviews:
 
 ```python
-business_id = search_businesses_result.businesses[0].business_id
+product_id = search_products_result.products[0].product_id
 
-get_business_reviews_result = s.yelp.get_business_reviews(request={
-    "business_id": business_id,
+get_product_reviews_result = s.google.get_product_reviews(request={
+    "product_id": product_id,
 })
 
-print(get_business_reviews_result)
+print(get_product_reviews_result)
 ```
 
 ## Generate a review analysis report
@@ -63,13 +62,13 @@ openai_client = OpenAI(
 # Function to analyze sentiment using GPT-4o
 def generate_report(reviews_data):
     # OpenAI prompt for generating report
-    prompt = f"Please generate a report of sentiment analysis and other key information from these yelp reviews about a business.\n\nReviews data: {reviews_data}"
+    prompt = f"Please generate a report of sentiment analysis and other key information from these product reviews.\n\nReviews data: {reviews_data}"
 
     # OpenAI API call
     response = openai_client.chat.completions.create(
         model="gpt-4o",
         messages=[
-            {"role": "system", "content": "You are an expert in generating reports on user contents, reviews, and businesses."},
+            {"role": "system", "content": "You are an expert in generating reports on user contents, reviews, and products."},
             {"role": "user", "content": prompt}
         ],
         max_tokens=1000,
@@ -80,13 +79,13 @@ def generate_report(reviews_data):
     return report
 
 # Run the function to generate a report from reviews
-reviews_data = get_business_reviews_result.reviews
+reviews_data = get_product_reviews_result.reviews
 report = generate_report(reviews_data)
 print(report)
 ```
 
 ## Conclusion
 
-You have now built an agent that can generate a comprehensive review analysis report.
+You have now built an agent that can generate a comprehensive product review analysis report.
 
 If you have any questions or need help, feel free to reach out to us at [Exfunc](https://exfunc.com).
