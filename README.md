@@ -21,7 +21,7 @@
 
 ## What is Exfunc?
 
-[Exfunc](https://exfunc.com) is an API service that allows you to easily take actions on different web pages.
+[Exfunc](https://exfunc.com) is an API service that allows you to take action on any website.
 
 ## How to use it?
 
