@@ -21,20 +21,80 @@
 
 ## What is Exfunc?
 
-[Exfunc](https://exfunc.com) is an API service that allows you to take action on any website.
+[Exfunc](https://exfunc.com) is an API service that allows your AI apps to search, retrieve, and interact with any website. We take care of the rest from provisioning browsers to maintaining automation scripts. Check out our [documentation](https://docs.exfunc.com).
 
 ## How to use it?
 
 Check out the following resources to get started:
-- [x] **API**: [Documentation](https://app.exfunc.com/docs)
+- [x] **API**: [Documentation](https://docs.exfunc.com)
 - [x] **SDKs**: [Python](https://github.com/carvedai/exfunc-py), [Typescript](https://github.com/carvedai/exfunc-js)
+- [ ] Want an SDK or Integration? Let us know by opening an issue.
 
 ### API Key
 
-To use the API, you need to sign up on [Exfunc](https://exfunc.com) and get an API key.
+To use the API, you need to sign up on [Exfunc](https://app.exfunc.com/auth/signup) and get an API key.
+
+### Features
+
+- Browserless: Connect to the web without using browsers or GUI.
+- Reliable: Automations that you can count on without maintaining code.
+- Usage-Based: Pay only for what you use and stop anytime.
 
 ## Demo
 
-This video outlines the chat assistant integration of Exfunc through function calling:
+Chat assistant using Exfunc APIs through function calling
 
 https://github.com/user-attachments/assets/c771ca7b-0abc-4c24-954b-896eeb1fe760
+
+## Using Python SDK
+
+### Installation
+
+```bash
+pip install exfunc
+```
+
+### Search People on LinkedIn
+
+```python
+import os
+from exfunc import Exfunc
+
+exfunc = Exfunc(api_key=os.getenv("EXFUNC_API_KEY", ""))
+
+response = exfunc.linkedin.search_people(request={
+  "locations": ["United States"],
+  "seniorities": ["c_suite"],
+  "company_sizes": ["51-200"],
+})
+print(response)
+```
+
+## Using Node SDK
+
+### Installation
+
+```bash
+npm add exfunc
+```
+
+### Get Tweet
+
+```js
+import { Exfunc } from "exfunc";
+
+const exfunc = new Exfunc({
+  apiKey: process.env["EXFUNC_API_KEY"] ?? "",
+});
+
+async function run() {
+  const result = await exfunc.twitter.getTweet({
+    tweetId: "<id>",
+  });
+
+  // Handle the result
+  console.log(result);
+}
+
+run();
+```
