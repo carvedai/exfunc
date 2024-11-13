@@ -21,7 +21,7 @@
 
 ## What is Exfunc?
 
-[Exfunc](https://exfunc.com) is an API service for performing tasks on the web. We allow developers to fetch data and take action in various web applications through API. With one line of code, they can fetch business reviews on Yelp, search properties on Zillow, or extract contact information from any company website. We take care of the rest from provisioning infrastructure to scaling browser automations. Our API is designed to be unified and composable and provides type-safe, structured input and output formats.
+[Exfunc](https://exfunc.com) is an API service for performing tasks on the web. With one line of code, you can fetch business reviews on Yelp, search properties on Zillow, or extract contact information from any company website. We take care of the rest from provisioning infrastructure to scaling browser automations. Check out our [documentation](https://docs.exfunc.com)!
 
 ## How to use it?
 
@@ -89,6 +89,4 @@ run();
 
 ## Demo
 
-Chat assistant using Exfunc APIs through function calling
-
-https://github.com/user-attachments/assets/c771ca7b-0abc-4c24-954b-896eeb1fe760
+https://github.com/user-attachments/assets/23e58739-4372-4d7a-92a0-225eec42a290
