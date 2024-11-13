@@ -21,7 +21,7 @@
 
 ## What is Exfunc?
 
-[Exfunc](https://exfunc.com) is an API service that allows your AI apps to search, retrieve, and interact with any website. We take care of the rest from provisioning browsers to maintaining automation scripts. Check out our [documentation](https://docs.exfunc.com).
+[Exfunc](https://exfunc.com) is an API service for performing tasks on the web. We allow developers to fetch data and take action in various web applications through API. With one line of code, they can fetch business reviews on Yelp, search properties on Zillow, or extract contact information from any company website. We take care of the rest from provisioning infrastructure to scaling browser automations. Our API is designed to be unified and composable and provides type-safe, structured input and output formats.
 
 ## How to use it?
 
@@ -33,18 +33,6 @@ Check out the following resources to get started:
 ### API Key
 
 To use the API, you need to sign up on [Exfunc](https://app.exfunc.com/auth/signup) and get an API key.
-
-### Features
-
-- Browserless: Connect to the web without using browsers or GUI.
-- Reliable: Automations that you can count on without maintaining code.
-- Usage-Based: Pay only for what you use and stop anytime.
-
-## Demo
-
-Chat assistant using Exfunc APIs through function calling
-
-https://github.com/user-attachments/assets/c771ca7b-0abc-4c24-954b-896eeb1fe760
 
 ## Using Python SDK
 
@@ -98,3 +86,9 @@ async function run() {
 
 run();
 ```
+
+## Demo
+
+Chat assistant using Exfunc APIs through function calling
+
+https://github.com/user-attachments/assets/c771ca7b-0abc-4c24-954b-896eeb1fe760
