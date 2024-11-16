@@ -1,0 +1,62 @@
+# Generate a TLDR of tweets in real-time
+
+Learn how to use Exfunc and OpenAI to generate a TLDR of tweets in real-time.
+
+## Setup
+
+Install our python dependencies, including openai and exfunc.
+
+```bash
+pip install exfunc openai
+```
+
+## Getting your OpenAI and Exfunc API Keys
+
+To use OpenAI GPT-4o-mini and Exfunc, you will need to get your API keys. You can get your OpenAI API key from [here](https://www.openai.com/) and your Exfunc API key from [here](https://exfunc.com).
+
+## Search tweets with Exfunc
+
+To be able to search tweets, we will use [Exfunc](https://exfunc.com). Exfunc provides an easy-to-use endpoint for searching tweets.
+
+Here is how we will search tweets using exfunc:
+
+```python
+import os
+from exfunc import Exfunc
+
+exfunc = Exfunc(api_key=os.getenv("EXFUNC_API_KEY"))
+
+search_tweets_result = exfunc.twitter.search_tweets(request={
+    "query": "mike tyson vs jake paul",  # replace with your topic of interest
+    "type": "latest",
+    "count": 20
+})
+
+print(search_tweets_result)
+```
+
+## TLDR
+
+Now that we have the tweets data, let's generate a TLDR.
+
+```python
+from openai import OpenAI
+
+openai = OpenAI()
+response = openai.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "TLDR in bullet points."},
+        {"role": "user", "content": search_tweets_result.json()}
+    ],
+    temperature=0
+)
+
+print(response.choices[0].message.content.strip())
+```
+
+## Conclusion
+
+You have now implemented a script to generate a TLDR of tweets in real-time.
+
+If you have any questions or need help, feel free to reach out to us at [Exfunc](https://exfunc.com).
