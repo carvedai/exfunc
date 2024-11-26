@@ -1,0 +1,175 @@
+# Find VP / head of engineering at recently funded, mid-sized tech companies in US
+
+Learn how to use Exfunc and OpenAI to find decision makers on LinkedIn.
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```bash
+export EXFUNC_API_KEY=...
+export OPENAI_API_KEY=...
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Finding recently funded, mid-sized tech companies in US
+
+### Search mid-sized tech companies in US
+
+```python
+num_pages = 1
+company_linkedin_urls = []
+for i in range(num_pages):
+    search_results = exfunc.linkedin.search_companies(request={
+        "locations": ["United States"],
+        "sizes": ["11-50", "51-200", "201-500"],
+            "industries": [
+            "computer & network security",
+            "computer games",
+            "computer hardware",
+            "computer networking",
+            "computer software",
+            "e-learning",
+            "information services",
+            "information technology & services",
+            "internet",
+            "semiconductors",
+            "telecommunications",
+            "wireless"
+        ],
+        "page": i+1,
+    })
+    company_linkedin_urls += [company.url for company in search_results.companies]
+
+# dedup in case there are duplicate URLs
+company_linkedin_urls = list(set(company_linkedin_urls))
+```
+
+### Get company funding information
+
+We will get funding information by calling LinkedIn GetCompany API for each company.
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def get_company(company_url):
+    try:
+        response = exfunc.linkedin.get_company(request={"company_url": company_url})
+        return response.company
+    except:
+        return None
+
+companies = []
+with ThreadPoolExecutor(max_workers=min(10, len(company_linkedin_urls))) as executor:
+    for company in executor.map(get_company, company_linkedin_urls):
+        if company:
+            companies.append(company)
+```
+
+### Filter recently funded companies
+
+```python
+from datetime import datetime, timedelta
+
+def has_recent_funding_round(funding_details):
+    num_days = 180  # 6 months
+    date_posted = funding_details.last_round.date_posted
+    if not date_posted:
+        return False
+
+    last_round_date = datetime.strptime(date_posted, "%Y-%m-%d")
+    cutoff_date = datetime.now() - timedelta(days=num_days)
+    return last_round_date >= cutoff_date
+
+recently_funded_companies = []
+for company in companies:
+    recently_funded = has_recent_funding_round(company.funding)
+    if recently_funded:
+        recently_funded_companies.append(company)
+```
+
+## Finding VP / head of engineering people
+
+### Search decision makers
+
+```python
+decision_makers = {}
+for company in recently_funded_companies:
+    search_results = exfunc.linkedin.search_people(request={
+        "company_domains": [company.website_url],
+        "seniorities": ["vp", "head", "director"],
+    })
+    if search_results.people:
+        decision_makers[company.url] = search_results.people
+```
+
+### Filter engineering people
+
+```python
+def qualify_job_title(job_title):
+    target_description = "decision maker in engineering"
+    prompt = f'Answer True or False: Does "{job_title}" match the description: "{target_description}"?\n'
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.chat.completions.create(messages=messages, temperature=0, model="gpt-4o-mini")
+    completion = response.choices[0].message.content.strip()
+    return "true" in completion.lower()
+
+for company_linkedin_url in decision_makers:
+    people = decision_makers[company_linkedin_url]
+    filtered_people = [person for person in people if qualify_job_title(person.title)]
+    decision_makers[company_linkedin_url] = filtered_people
+```
+
+### View results
+
+```python
+import pandas as pd
+
+result = []
+for people in decision_makers.values():
+    result += [person.model_dump() for person in people]
+
+df = pd.DataFrame.from_records(result)
+print(df.to_markdown(index=False))
+```
+
+| url                                  | name     | location                                 | title                                                               | company_name   | company_url                                       | experiences   |
+|:-------------------------------------|:---------|:-----------------------------------------|:--------------------------------------------------------------------|:---------------|:--------------------------------------------------|:--------------|
+| https://www.linkedin.com/in/redacted | Redacted | Athens, Attica, Greece                   | VP, R&D                                                             | HUMAN          | https://www.linkedin.com/company/humansecurityinc | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | Dallas, Texas, United States             | VP, Engineering                                                     | HUMAN          | https://www.linkedin.com/company/humansecurityinc | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted |                                          | Directeur technique                                                 | HUMAN          | https://www.linkedin.com/company/humansecurityinc | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | Israel                                   | Sr. Director of Technical Security Operations (Formerly PerimeterX) | HUMAN          | https://www.linkedin.com/company/humansecurityinc | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | New York, New York, United States        | Sr. Director of IT                                                  | HUMAN          | https://www.linkedin.com/company/humansecurityinc | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | San Francisco, California, United States | Head of Solutions Engineering                                       | Cresta         | https://www.linkedin.com/company/cresta-inc       | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | San Francisco, California, United States | Head of Information Technology Department                           | Cresta         | https://www.linkedin.com/company/cresta-inc       | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | Mysore division, Karnataka, India        | Head Of Department                                                  | Cresta         | https://www.linkedin.com/company/cresta-inc       | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | Edgewood, New Mexico, United States      | Director of AI Delivery                                             | Cresta         | https://www.linkedin.com/company/cresta-inc       | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | Mountain View, California, United States | VP of Engineering                                                   | Cresta         | https://www.linkedin.com/company/cresta-inc       | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | San Francisco, California, United States | Head of Team Platform                                               | Mercor         | https://www.linkedin.com/company/mercor-ai        | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | San Francisco, California, United States | Head of Platform (Work)                                             | Mercor         | https://www.linkedin.com/company/mercor-ai        | Redacted      |
+| https://www.linkedin.com/in/redacted | Redacted | Argentina                                | Head                                                                | micro1         | https://www.linkedin.com/company/micro1           | Redacted      |
+
+## Conclusion
+
+You have now built a list of VP / head of engineering at recently funded, mid-sized tech companies in US.
+
+If you have any questions or need help, feel free to reach out to us at [Exfunc](https://exfunc.com).
