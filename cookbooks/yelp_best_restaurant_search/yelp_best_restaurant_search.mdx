@@ -1,0 +1,97 @@
+# Find Thai restaurants in San Francisco with 4.8+ stars and 30+ reviews
+
+Learn how to use Exfunc to find best Thai restaurants in San Francisco.
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com).
+
+Ensure API key is accessible in your local environment.
+
+```bash
+export EXFUNC_API_KEY=...
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+
+exfunc = Exfunc()
+```
+
+## Finding best rated Thai restaurants in San Francisco
+
+### Search Thai restaurants in San Francisco
+
+```python
+num_pages = 3
+business_ids = []
+for i in range(num_pages):
+    search_results = exfunc.yelp.search_businesses(request={
+        "query": "thai",
+        "location": "san francisco",
+        "sort_by": "highest_rated",
+        "start": 10*i,
+    })
+    business_ids += [business.business_id for business in search_results.businesses]
+```
+
+### Get business information
+
+We will get business information by calling Yelp GetBusiness API for each business.
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def get_business(business_id):
+    try:
+        response = exfunc.yelp.get_business(request={"business_id": business_id})
+        return response.business
+    except:
+        return None
+
+businesses = []
+with ThreadPoolExecutor(max_workers=min(10, len(business_ids))) as executor:
+    for business in executor.map(get_business, business_ids):
+        if business:
+            businesses.append(business)
+```
+
+### Filter businesses with 4.8+ rating and 30+ reviews
+
+```python
+filtered_businesses = []
+for business in businesses:
+    if business.rating and business.rating >= 4.8 and business.review_count and business.review_count >= 30:
+        filtered_businesses.append(business)
+```
+
+### View results
+
+```python
+import pandas as pd
+
+records = [business.model_dump() for business in filtered_businesses]
+
+df = pd.DataFrame.from_records(records)
+print(df.to_markdown(index=False))
+```
+
+| business_id            | alias                          | name           | address                                          | website                      | business_page_link                                      | categories                                                                                            |   rating |   review_count | highlights   | service_area   | neighborhoods    |
+|:-----------------------|:-------------------------------|:---------------|:-------------------------------------------------|:-----------------------------|:--------------------------------------------------------|:------------------------------------------------------------------------------------------------------|---------:|---------------:|:-------------|:---------------|:-----------------|
+| md_aFJiOUE4yuFiZ6XXVsQ | basil-the-bold-san-francisco-5 | Basil the Bold | 1661 Tennessee St Ste 2J San Francisco, CA 94107 | https://www.basilthebold.com | https://www.yelp.com/biz/basil-the-bold-san-francisco-5 | [{'title': 'Thai', 'url': None}, {'title': 'Vegan', 'url': None}, {'title': 'Caterers', 'url': None}] |      4.9 |             39 |              |                | ['Potrero Hill'] |
+
+## Conclusion
+
+You have now built a list of Thai restaurants in San Francisco with 4.8+ stars and 30+ reviews.
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
