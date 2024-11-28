@@ -1,0 +1,104 @@
+# Extract contact information from a company website
+
+Learn how to use Exfunc to extract contact information from a company website.
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com).
+
+Ensure API key is accessible in your local environment.
+
+```bash
+export EXFUNC_API_KEY=...
+export OPENAI_API_KEY=...
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Extracting contact information
+
+### Start a navigator task
+
+```python
+company_website_url = "https://www.sfpuppylove.com"
+objective = "find contact info"
+
+start_task_response = exfunc.navigator.start_task(request={
+    "url": company_website_url,
+    "objective": objective
+})
+
+task_id = start_task_response.task_id
+```
+
+### Wait for navigator task to finish
+
+```python
+import json
+import time
+
+t = time.time()
+max_wait_time_in_secs = 900  # 15 min
+while int(time.time() - t) <= max_wait_time_in_secs:
+    get_task_response = exfunc.navigator.get_task(request={
+        "task_id": task_id,
+    })
+    task = get_task_response.task
+    print(f"Task status: {task.status.value}")
+    if task.status.value in ["SUCCEEDED", "FAILED"]:
+        break
+    time.sleep(10)
+```
+
+### Extract contact information from page screenshot
+
+```python
+response = openai.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                { "type": "text", "text": "Extract contact information from the screenshot." },
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{task.response.img}"}},
+            ],
+        },
+    ],
+    temperature=0
+)
+print(completion)
+```
+
+```markdown
+Here is the extracted contact information:
+
+- **Email:** info@sfpuppylove.com
+- **Phone:** (415) 613-1412
+- **Address:** 840 Harrison St, San Francisco, CA 94107
+
+**Business Hours:**
+- **Mon - Fri:** 7:00 am - 7:00 pm
+- **Sat - Sun:** 8:00 am - 5:00 pm
+```
+
+## Conclusion
+
+You have now extracted contact information from a company website.
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
