@@ -1,0 +1,111 @@
+# Summarize Google product reviews of AirPods Max
+
+Learn how to use Exfunc and OpenAI to summary Google product reviews.
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```bash
+export EXFUNC_API_KEY=...
+export OPENAI_API_KEY=...
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Summarizing Google product reviews
+
+### Search product
+
+```python
+search_products_result = exfunc.google.search_products(request={
+    "query": "airpods max",
+})
+```
+
+## Get reviews
+
+```python
+product_id = search_products_result.products[0].product_id
+
+get_product_reviews_result = exfunc.google.get_product_reviews(request={
+    "product_id": product_id,
+})
+```
+
+## Generate summary
+
+```python
+prompt = f"Generate a report of sentiment analysis and other key information from these product reviews.\n\nReviews:\n{get_product_reviews_result.reviews}\n"
+
+response = openai.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0
+)
+
+completion = response.choices[0].message.content.strip()
+```
+
+```markdown
+### Sentiment Analysis Report for AirPods Max Reviews
+
+#### Overview
+This report summarizes the sentiment and key insights derived from a collection of product reviews for the Apple AirPods Max headphones. The reviews were sourced from various platforms, including Best Buy, Target, and John Lewis, and cover a range of user experiences and opinions.
+
+#### Sentiment Summary
+- **Overall Sentiment**: Positive
+- **Average Rating**: 4.3/5.0
+- **Positive Reviews**: 10
+- **Neutral Reviews**: 2
+- **Negative Reviews**: 3
+
+#### Detailed Sentiment Breakdown
+1. **Positive Sentiments**:
+   - **Sound Quality**: Many users praised the sound quality, describing it as "astounding," "immersive," and "phenomenal." Users noted that the headphones excel in various music genres, including rock and classical.
+   - **Build Quality**: The premium materials and design received high marks, with several reviews highlighting the durability and comfort of the headphones.
+   - **Integration with Apple Ecosystem**: Users appreciated the seamless connectivity with other Apple devices, enhancing the overall user experience.
+   - **Noise Cancellation**: The noise cancellation feature was frequently mentioned as effective, providing a significant improvement in listening experiences, especially in noisy environments.
+
+2. **Neutral Sentiments**:
+   - **Price Concerns**: While many users acknowledged the quality of the headphones, several expressed concerns about the high price point, suggesting that they may not offer value for money compared to competitors.
+   - **Minor Disappointments**: Some users noted that the lack of significant upgrades in the new USB-C model was disappointing, particularly regarding the chip and water resistance features.
+
+3. **Negative Sentiments**:
+   - **Audio Quality Issues**: A few users criticized the audio quality, specifically mentioning a lack of bass and describing the headphones as "overpriced branded garbage."
+   - **Comfort Issues**: Some users reported discomfort during extended use, particularly regarding ear sweat and the fit of the headphones.
+   - **Functionality Concerns**: A review highlighted issues with the headphones not turning off easily and the inconvenience of needing to use a case for sleep mode.
+
+#### Key Insights
+- **Target Audience**: The AirPods Max are primarily favored by users deeply integrated into the Apple ecosystem, as the seamless connectivity enhances their appeal.
+- **User Experience**: The majority of users report a high level of satisfaction with sound quality and build, making them suitable for both casual listeners and audiophiles.
+- **Competitive Landscape**: Despite the positive feedback, there is a notable concern regarding the price, with some users suggesting alternatives that may offer better value.
+- **Product Improvements**: Users are looking for future iterations to address concerns about audio quality, comfort, and additional features like water resistance.
+
+#### Conclusion
+The Apple AirPods Max headphones generally receive positive feedback from users, particularly for their sound quality, build, and integration with Apple products. However, concerns about pricing and comfort suggest that potential buyers should weigh these factors against their personal preferences and needs. Overall, the AirPods Max remain a strong contender in the premium headphone market, especially for those already invested in the Apple ecosystem.
+```
+
+## Conclusion
+
+You have now implemented a script to summarize Google product reviews.
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
