@@ -1,0 +1,110 @@
+# Find full-time software engineering jobs in US that require AWS skills
+
+Learn how to use Exfunc and OpenAI to find full-time AWS jobs on LinkedIn.
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```bash
+export EXFUNC_API_KEY=...
+export OPENAI_API_KEY=...
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Finding full-time AWS jobs
+
+### Search jobs
+
+```python
+response = exfunc.linkedin.search_job_postings(request={
+    "keywords": "software engineer",
+    "location": "united states",
+    "job_type": "Full-time",
+    "page": 1
+})
+job_posting_linkedin_urls = [job_posting.url for job_posting in response.job_postings]
+```
+
+### Get job details
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def get_job_posting(job_posting_url):
+    try:
+        response = exfunc.linkedin.get_job_posting(request={"job_posting_url": job_posting_url})
+        return response.job_posting
+    except:
+        return None
+
+job_postings = []
+with ThreadPoolExecutor(max_workers=min(10, len(job_posting_linkedin_urls))) as executor:
+    for job_posting in executor.map(get_job_posting, job_posting_linkedin_urls):
+        if job_posting:
+            job_postings.append(job_posting)
+```
+
+### Filter jobs that require AWS skills
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def qualify_job_posting(job_posting):
+    prompt = f"Answer True or False: does the following job description require skills in AWS?\n\nJob description:\n{job_posting.description}\n"
+    response = openai.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}],
+        model="gpt-4o-mini",
+        temperature=0,
+    )
+    completion = response.choices[0].message.content.strip()
+    return "true" in completion.lower()
+
+qualified_job_postings = []
+with ThreadPoolExecutor(max_workers=min(10, len(job_postings))) as executor:
+    for i, is_qualified in enumerate(executor.map(qualify_job_posting, job_postings)):
+        if is_qualified:
+            qualified_job_postings.append(job_postings[i])
+```
+
+### View results
+
+```python
+import pandas as pd
+
+records = [job_posting.model_dump() for job_posting in qualified_job_postings]
+
+df = pd.DataFrame.from_records(qualified_job_postings)
+print(df.to_markdown(index=False))
+```
+
+| url                                            | title                                       | location              | description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | job_type   | job_functions                                        | industries                        | seniority_level   |   applicants | date_posted               | company_name              | company_url                                                   |
+|:-----------------------------------------------|:--------------------------------------------|:----------------------|:------------------------------------------------------|:-----------|:-----------------------------------------------------|:----------------------------------|:------------------|-------------:|:--------------------------|:--------------------------|:--------------------------------------------------------------|
+| https://www.linkedin.com/jobs/view/4077238267/ | Fullstack Developer/Engineer                | Monmouth Junction, NJ | We are seeking an experienced Full Stack Developer... | Full-time  | ['Finance', 'Engineering', 'Information Technology'] | ['IT Services and IT Consulting'] | Mid-Senior level  |          367 | 2024-11-18 15:16:45+00:00 | Precision Technologies    | https://www.linkedin.com/company/precision-technologies-corp- |
+| https://www.linkedin.com/jobs/view/4084562960/ | Senior/Staff Software Engineer (Full Stack) | Pittsburgh, PA        | About SoftLedger SoftLedger is a venture-backed, ...  | Full-time  |                                                      |                                   |                   |          355 | 2024-11-25 17:43:59+00:00 | SoftLedger                | https://www.linkedin.com/company/softledger                   |
+| https://www.linkedin.com/jobs/view/4072040159/ | .Net Full stack Developer                   | Georgetown, KY        | Role: .Net Full stack DeveloperLocation: Georgetown...| Full-time  | ['Information Technology']                           | ['Information Services']          | Mid-Senior level  |          316 | 2024-11-11 17:53:30+00:00 | Tata Consultancy Services | https://www.linkedin.com/company/tata-consultancy-services    |
+
+## Conclusion
+
+You have now built a list of full-time software engineering jobs in US that require AWS skills.
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
