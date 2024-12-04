@@ -1,0 +1,84 @@
+# Predict Elon Musk's next post based on his posts on X
+
+Learn how to use Exfunc and OpenAI to predict Elon Musk's next post on X
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```python
+import getpass
+import os
+
+if "OPENAI_API_KEY" not in os.environ:
+    os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API key:\n")
+if "EXFUNC_API_KEY" not in os.environ:
+    os.environ["EXFUNC_API_KEY"] = getpass.getpass("Exfunc API key:\n")
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Predicting Elon Musk's next post
+
+### Search users
+
+```python
+query = "Elon Musk"
+search_users_response = exfunc.twitter.search_users(request={
+    "query": query,
+})
+username = search_users_response.users[0].username
+```
+
+### Get posts
+
+```python
+import json
+
+get_user_tweets_response = exfunc.twitter.get_user_tweets(request={
+    "username": username,
+    "count": 100,
+})
+posts = [tweet.model_dump() for tweet in get_user_tweets_response.tweets]
+print(json.dumps(posts, indent=4))
+```
+
+### Predict next post
+
+```python
+posts_str = "\n\n".join([post["full_text"] for post in posts])
+prompt = f"Predict {query}'s next post based on posts. Return only the post body in your reply.\n\nPosts:\n{posts_str}"
+
+response = openai.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0.7
+)
+
+completion = response.choices[0].message.content.strip()
+print(completion)
+```
+
+## Conclusion
+
+You have now predicted Elon Musk's next post based on his posts on X.
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
