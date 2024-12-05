@@ -1,0 +1,94 @@
+# Analyze SF property prices on Zillow
+
+Learn how to use Exfunc and OpenAI to analyze property prices on Zillow
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```python
+import getpass
+import os
+
+if "OPENAI_API_KEY" not in os.environ:
+    os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API key:\n")
+if "EXFUNC_API_KEY" not in os.environ:
+    os.environ["EXFUNC_API_KEY"] = getpass.getpass("Exfunc API key:\n")
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Analyzing property prices on Zillow
+
+### Search properties
+
+```python
+search_properties_response = exfunc.zillow.search_properties(request={
+    "location": "san francisco",
+    "listing_status": "for_sale",
+    "page": 1,
+})
+property_ids = [p.property_id for p in search_properties_response.properties[:30]]
+```
+
+### Get properties
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def get_property(property_id):
+    try:
+        response = exfunc.zillow.get_property(request={"property_id": str(property_id)})
+        return response.property
+    except Exception as e:
+        return None
+
+properties = []
+with ThreadPoolExecutor(max_workers=min(10, len(property_ids))) as executor:
+    for p in executor.map(get_property, property_ids):
+        if p:
+            properties.append(p)
+```
+
+### Analyze properties
+
+```python
+import json
+
+properties_str = "\n\n".join([json.dumps({k: v for k, v in p.model_dump().items() if k != "photos"}) for p in properties])
+
+prompt = f"Analyze property prices based on the following documents.\n\nDocuments:\n{properties_str}"
+
+response = openai.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": prompt}],
+    temperature=0
+)
+
+completion = response.choices[0].message.content.strip()
+print(completion)
+```
+
+## Conclusion
+
+You have now analyze SF property prices on Zillow
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
