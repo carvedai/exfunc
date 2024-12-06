@@ -1,0 +1,116 @@
+# Find software engineers in SF with 10+ years of full-time experience
+
+Learn how to use Exfunc and OpenAI to find candidates on LinkedIn
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```bash
+export EXFUNC_API_KEY=...
+export OPENAI_API_KEY=...
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Finding candidates
+
+### Search people
+
+```python
+search_people_response = exfunc.linkedin.search_people(request={
+    "keywords": "software engineer",
+    "locations": ["san francisco"]
+})
+people = [p.model_dump() for p in search_people_response.people][:20]
+```
+
+### Filter experiences
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def qualify_experience(experience):
+    target_description = "full-time job"
+    job_title = experience["title"]
+    prompt = f'Answer True or False: Does "{job_title}" match the description: "{target_description}"?\n'
+    messages = [{"role": "user", "content": prompt}]
+    response = openai.chat.completions.create(messages=messages, temperature=0, model="gpt-4o-mini")
+    completion = response.choices[0].message.content.strip()
+    return "true" in completion.lower()
+
+for p in people:
+    experiences = p["experiences"]
+
+    ft_experiences = []
+    with ThreadPoolExecutor(max_workers=min(10, len(experiences))) as executor:
+        for i, is_qualified in enumerate(executor.map(qualify_experience, experiences)):
+            if is_qualified:
+                ft_experiences.append(experiences[i])
+
+    p["ft_experiences"] = ft_experiences
+```
+
+### Calculate years of experience
+
+```python
+from datetime import datetime
+
+def calculate_years_of_experience(experiences):
+    total_months = 0
+
+    for exp in experiences:
+        start_date = datetime.strptime(exp['start_date'], "%Y-%m-%d")
+        end_date = datetime.strptime(exp['end_date'], "%Y-%m-%d") if exp['end_date'] else datetime.now()
+        
+        # Calculate the number of months between start and end dates
+        months_diff = (end_date.year - start_date.year) * 12 + (end_date.month - start_date.month)
+        total_months += months_diff
+
+    # Convert months to years
+    years_of_experience = total_months / 12
+    return years_of_experience
+
+for p in people:
+    p["ft_yoe"] = calculate_years_of_experience(p["ft_experiences"])
+```
+
+### Filter people
+
+```python
+import pandas as pd
+
+min_ft_yoe = 10
+
+result = []
+for p in people:
+    if p["ft_yoe"] >= min_ft_yoe:
+        result.append(p)
+
+df = pd.DataFrame.from_records(result)
+df[["url", "name", "location", "title", "company_name", "ft_yoe"]]
+```
+
+## Conclusion
+
+You have now built a list of software engineers in SF with 10+ years of full-time experinece
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
