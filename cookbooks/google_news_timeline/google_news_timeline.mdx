@@ -1,0 +1,122 @@
+# Generate a timeline of UnitedHealthcare CEO shooting
+
+Learn how to use Exfunc and OpenAI to generate a timeline based on Google News articles
+
+## Getting Started
+
+### Install packages
+
+```bash
+pip install exfunc openai
+```
+
+### Configure API keys
+
+You will need to provide API keys. You can get your Exfunc API key [here](https://exfunc.com) and your OpenAI API key [here](https://www.openai.com/).
+
+Ensure both API keys are accessible in your local environment.
+
+```python
+import getpass
+import os
+
+if "OPENAI_API_KEY" not in os.environ:
+    os.environ["OPENAI_API_KEY"] = getpass.getpass("OpenAI API key:\n")
+if "EXFUNC_API_KEY" not in os.environ:
+    os.environ["EXFUNC_API_KEY"] = getpass.getpass("Exfunc API key:\n")
+```
+
+### Configure clients
+
+```python
+from exfunc import Exfunc
+from openai import OpenAI
+
+exfunc = Exfunc()
+openai = OpenAI()
+```
+
+## Generating a timeline based on Google News articles
+
+### Search news
+
+```python
+search_news_response = exfunc.google.search_news(request={
+    "query": "unitedhealthcare ceo shooting",
+})
+urls = [item.link for item in search_news_response.news]
+```
+
+### Get articles in markdown
+
+```python
+from concurrent.futures import ThreadPoolExecutor
+
+def get_markdown(url):
+    max_len = 10000
+    try:
+        response = exfunc.navigator.scrape(request={"url": url})
+        return response.markdown[:max_len]
+    except:
+        return None
+
+markdowns = []
+with ThreadPoolExecutor(max_workers=min(10, len(urls))) as executor:
+    for markdown in executor.map(get_markdown, urls):
+        if markdown:
+            markdowns.append(markdown)
+```
+
+### Generate timeline
+
+```python
+response = openai.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "Generate a timeline of events."},
+        {"role": "user", "content": "\n\n".join(markdowns)}
+    ],
+    temperature=0
+)
+
+completion = response.choices[0].message.content.strip()
+print(completion)
+```
+
+```markdown
+### Timeline of Events: UnitedHealthcare CEO Brian Thompson Shooting
+
+**November 24, 2024**
+- The suspect arrives in New York City on a Greyhound bus from Atlanta, Georgia.
+
+**November 30, 2024**
+- The suspect checks into the HI New York City Hostel on the Upper West Side, using a fake New Jersey identification.
+
+**December 4, 2024**
+- **6:40 AM**: Brian Thompson, CEO of UnitedHealthcare, is shot multiple times outside the New York Hilton hotel in Midtown Manhattan. The shooting is described as a "brazen, targeted attack."
+- The suspect approaches Thompson from behind and fires several shots, including at point-blank range. The gun appears to jam during the attack, but the suspect clears it and continues shooting.
+- The suspect flees the scene on foot, then rides a bicycle into Central Park.
+
+**December 5, 2024**
+- Police release surveillance images of the suspect taken at the hostel, where he was seen flirting with a staff member and briefly removed his mask.
+- Investigators find bullet casings at the scene with the words "deny," "defend," and "depose" written on them, suggesting a possible motive related to grievances against the insurance industry.
+- The NYPD begins a manhunt for the suspect, offering a reward for information leading to his arrest.
+
+**December 6, 2024**
+- Police believe the suspect has left New York City, possibly taking a bus from the Port Authority Bus Terminal.
+- Investigators recover a backpack believed to belong to the suspect in Central Park, along with other items that may contain forensic evidence.
+- The FBI announces a $50,000 reward for information leading to the suspect's arrest.
+
+**December 7, 2024**
+- The manhunt for the suspect enters its third day, with police continuing to analyze surveillance footage and forensic evidence.
+- Investigators are looking into the suspect's background, including any potential connections to UnitedHealthcare or grievances against the company.
+
+### Summary
+The shooting of Brian Thompson has raised significant concerns within the health insurance industry, prompting discussions about security and the potential motivations behind the attack. The investigation continues as authorities seek to identify and apprehend the suspect.
+```
+
+## Conclusion
+
+You have now generated a timeline based on Google News articles
+
+If you have any questions or need help, feel free to reach out to us at support@exfunc.com
