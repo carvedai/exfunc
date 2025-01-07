@@ -11,7 +11,7 @@
     <a href="https://www.linkedin.com/company/exfunc">
       <img src="https://img.shields.io/badge/Follow%20on%20LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="Follow on LinkedIn" />
     </a>
-    <a href="https://discord.com/invite/58CBc3Kd">
+    <a href="https://discord.gg/Ywmd37c9">
       <img src="https://img.shields.io/badge/Join%20our%20Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join our Discord" />
     </a>
   </p>
