@@ -1,6 +1,6 @@
 <div align="center">
-  <a href="https://exfunc.com">
-    <img src="https://img.shields.io/badge/Visit-exfunc.com-white" alt="Visit exfunc.com">
+  <a href="https://exfunc.dev">
+    <img src="https://img.shields.io/badge/Visit-exfunc.dev-white" alt="Visit exfunc.dev">
   </a>
 </div>
 <div>
@@ -21,18 +21,18 @@
 
 ## What is Exfunc?
 
-[Exfunc](https://exfunc.com) is an API service for performing tasks on the web. With one line of code, you can fetch business reviews on Yelp, search properties on Zillow, or extract contact information from any company website. We take care of the rest from provisioning infrastructure to scaling browser automations. Check out our [documentation](https://docs.exfunc.com)!
+[Exfunc](https://exfunc.dev) is an API service for performing tasks on the web. With one line of code, you can fetch business reviews on Yelp, search properties on Zillow, or extract contact information from any company website. We take care of the rest from provisioning infrastructure to scaling browser automations. Check out our [documentation](https://docs.exfunc.dev)!
 
 ## How to use it?
 
 Check out the following resources to get started:
-- [x] **API**: [Documentation](https://docs.exfunc.com)
+- [x] **API**: [Documentation](https://docs.exfunc.dev)
 - [x] **SDKs**: [Python](https://github.com/carvedai/exfunc-py), [Typescript](https://github.com/carvedai/exfunc-js)
 - [ ] Want an SDK or Integration? Let us know by opening an issue.
 
 ### API Key
 
-To use the API, you need to sign up on [Exfunc](https://app.exfunc.com/auth/signup) and get an API key.
+To use the API, you need to sign up on [Exfunc](https://app.exfunc.dev/auth/signup) and get an API key.
 
 ## Using Python SDK
 
